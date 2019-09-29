@@ -25,21 +25,16 @@ def pawn(color):
 
     return move_to
 
+def rook(game, from_i, to_i, from_j, to_j):
+    pass
+
 moves = {
     '♙': pawn('white'),
     '♟': pawn('black'),
+    '♜': rook,
+    '♖': rook,
 }
 
 game = StartGame(moves)
 
-game.move([2, 'A'], [3, 'A']) \
-    .move([3, 'A'], [4, 'A']) \
-    .move([4, 'A'], [5, 'A']) \
-    .move([5, 'A'], [6, 'A']) \
-    .move([6, 'A'], [7, 'B']) \
-    .move([7, 'A'], [6, 'A']) \
-    .move([6, 'A'], [5, 'A']) \
-    .move([5, 'A'], [4, 'A']) \
-    .move([4, 'A'], [3, 'A']) \
-    .move([3, 'A'], [2, 'A']) \
-    .move([2, 'A'], [1, 'B'])
+game.move([2, 'A'], [3, 'A'])
