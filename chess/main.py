@@ -1,3 +1,5 @@
+from chess.helpers import inverse
+
 def create_empty_field():
     return {
         1: {
@@ -97,8 +99,6 @@ def render(field, fallen):
 
     print('  ' + '-----' * 8 + '-')
 
-    print(fallen)
-
     return field
 
 class Game:
@@ -109,11 +109,23 @@ class Game:
             'white': [],
             'black': []
         }
+        self.queue = 'white'
+        self.turn = 0
+        self.turns = []
     
     def move(self, _from, _to):
-        self.field = self._move_to(_from, _to)
-        render(self.field, self.fallen)
+        try:
+            self.field = self._move_to(_from, _to)
+            self.queue = inverse(self.queue)
+            self.turn += 1
+            self.turns.append([_from, _to])
+            render(self.field, self.fallen)
+        except Exception as err:
+            print(err)
         return self
+
+    def get_color(self, s):
+        return 'black' if s in '♜♞♝♛♚♝♞♜♟' else 'white'
 
     def _move_to(self, _from, _to):
         [from_i, from_j] = _from
@@ -122,14 +134,17 @@ class Game:
         print(f"Movig from {from_i}{from_j} to {to_i}{to_j}\n")
 
         figure = self.find(from_i, from_j)
-
         if figure == ' ':
-            print('No figure')
-            return
+            raise Exception('No figure')
         
+        color = self.get_color(figure)
+        if  color != self.queue:
+            raise Exception(f'It\'s {self.queue}s turn')
+
         move_fn = self.moves[figure]
 
         move_result = move_fn(self, from_i, to_i, from_j, to_j)
+
         if move_result:
             del self.field[from_i][from_j] 
             if self.field.get(to_i):
@@ -144,7 +159,7 @@ class Game:
             if isinstance(move_result, dict):
                 self.fallen[move_result['color']].append(move_result['figure'])
         else:
-            print('Not allowed')
+            raise Exception('This move is not allowed')
         
         return self.field
 
@@ -157,5 +172,5 @@ def start(moves):
     field = create_empty_field()
     game = Game(field, moves)
     render(game.field, game.fallen)
-    print('Game is sttarted')
+    print('Game is started')
     return game

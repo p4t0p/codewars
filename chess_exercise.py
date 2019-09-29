@@ -1,66 +1,51 @@
 from chess.main import start as StartGame
+from chess.helpers import inverse, compare, get_range, to_x_cord, from_x_cord
 
-def compare(a, b):
-    l = 'ABCDEFGH'
-    return l.index(a) - l.index(b)
+def pawn(game, from_i, to_i, from_j, to_j):
+    color = game.queue
+    is_straight = from_j == to_j
+    move_to_fig = game.find(to_i, to_j)
 
-def inverse(color):
-    return 'white' if color == 'black' else 'black'
+    max_move = 1
+    if (color is 'black' and from_i == 2) or (color is 'white' and from_i == 7):
+        max_move = 2
 
-def get_range(a, b):
-    if a<b:
-        return list(range(a+1,b))
+    if is_straight:
+        return move_to_fig == ' ' and to_i - from_i <= max_move if color is 'black' else from_i - to_i <= max_move
     else:
-        return list(range(b+1,a))
-
-def to_x_cord(letter):
-    return 'ABCDEFGH'.index(letter)
-def from_x_cord(num):
-    return 'ABCDEFGH'[num]
-
-
-
-def pawn(color):
-    def move_to(game, from_i, to_i, from_j, to_j):
-        is_straight = from_j == to_j
-        move_to_fig = game.find(to_i, to_j)
-
-        if is_straight:
-            return to_i - from_i == (1 if color == 'black' else -1 ) and move_to_fig == ' '
+        if abs(compare(from_j, to_j)) <= max_move and move_to_fig != ' ' and game.get_color(move_to_fig) != color:
+            return {
+                'figure': move_to_fig,
+                'color': inverse(color),
+            }
         else:
-            if abs(compare(from_j, to_j))==1 and move_to_fig != ' ':
-                return {
-                    'figure': move_to_fig,
-                    'color': inverse(color),
-                }
-            else:
-                return False
+            return False
 
-    return move_to
+def rook(game, from_i, to_i, from_j, to_j):
+    color = game.queue
+    is_horizontal = from_i == to_i
+    is_vertical = from_j == to_j
+    move_to_fig = game.find(to_i, to_j)
 
-def rook(color):
-    def move_to(game, from_i, to_i, from_j, to_j):
-        is_horizontal = from_i == to_i
-        is_vertical = from_j == to_j
-        move_to_fig = game.find(to_i, to_j)
-        if is_horizontal:
-            for x in get_range(to_x_cord(from_j),to_x_cord(to_i)):
-                if game.find(to_i,from_x_cord(x)) != ' ':
-                     return False
-        else:
-            for y in get_range(from_i, to_i):
-                if game.find(y,to_j) != ' ':
-                     return False
-        return True       
-    return move_to
+    if is_horizontal:
+        for x in get_range(to_x_cord(from_j), to_x_cord(to_i)):
+            if game.find(to_i, from_x_cord(x)) != ' ':
+                    return False
+    else:
+        for y in get_range(from_i, to_i):
+            if game.find(y,to_j) != ' ':
+                    return False
+
+    if move_to_fig != ' ':
+        return game.get_color(move_to_fig) != color
+    
+    return True
 
 moves = {
-    '♙': pawn('white'),
-    '♟': pawn('black'),
-    '♜': rook('black'),
-    '♖': rook('white')
+    '♙': pawn,
+    '♟': pawn,
+    '♜': rook,
+    '♖': rook,
 }
 
 game = StartGame(moves)
-
-game.move([2, 'A'], [3, 'A'])
